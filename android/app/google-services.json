@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "895529056069",
+    "project_id": "go-safe-ae33b",
+    "storage_bucket": "go-safe-ae33b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:895529056069:android:b4736160fa0e9b8de7702c",
+        "android_client_info": {
+          "package_name": "com.example.project_expo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "895529056069-g6nvq64g1i81msm4ru6tms7q0eb7jgdp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAevU8hZ2_ckqkETI99mlu_9i0jLRCLN9w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "895529056069-g6nvq64g1i81msm4ru6tms7q0eb7jgdp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
