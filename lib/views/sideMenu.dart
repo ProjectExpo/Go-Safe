@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project_expo/Autentication/auth.dart';
 
 class NavDrawer extends StatefulWidget {
   final String? name;
@@ -48,6 +49,30 @@ class _NavDrawerState extends State<NavDrawer> {
                 style: TextStyle(
                   color: Colors.white,
                 ),
+              ),
+            ),
+
+            Container(
+              margin: EdgeInsets.only(top: 300),
+              child: Column(
+                children: [
+                  Divider(height: 10,color: Colors.white,indent: 10, endIndent: 10,thickness: 1.2,),
+                  ListTile(
+                    onTap: (){
+                      SignOut();
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+
+                    },
+                    leading: Icon(Icons.exit_to_app, color: Colors.white,size: 30,),
+                    title: Text(
+                      'Log Out',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
 

@@ -1,16 +1,12 @@
 
-
-import 'dart:ffi';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 import 'package:project_expo/Autentication/location.dart';
-import 'package:project_expo/models/UserDetails.dart';
+import 'package:project_expo/views/dialog.dart';
 import 'package:project_expo/views/sideMenu.dart';
 
 
@@ -106,15 +102,39 @@ class _HomeState extends State<Home> {
                 child: TextFormField(
                   controller: _searchLocation,
                   decoration: InputDecoration(
+                    suffixIcon: IconButton(
+                      onPressed: (){},
+                      icon: Icon(Icons.search),
+                    ),
                     hintText: 'Search',
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: Colors.white.withOpacity(0.5),
                     contentPadding: EdgeInsets.only(left: 30),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(50),
                     ),
                   ),
                 ),
+            ),
+            Container(
+              margin: EdgeInsets.only(top: 650, left: 10),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(20),
+                shape: BoxShape.rectangle
+              ),
+              child: MaterialButton(
+                onPressed: (){
+                  showDialog(context: context, builder: (context) => Box(),);
+                },
+                child: Text(
+                  'SOS',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20
+                  ),
+                ),
+              ),
             ),
           ],
         ),
