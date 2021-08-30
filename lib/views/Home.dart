@@ -1,11 +1,11 @@
 
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:project_expo/Autentication/location.dart';
 import 'package:project_expo/views/dialog.dart';
 import 'package:project_expo/views/sideMenu.dart';
 
@@ -20,13 +20,25 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 
-  late Position _currentLocation;
   Map <String, dynamic>? details;
+  LatLng latlng = new LatLng(0, 0);
+  CameraPosition _currentPosition = new CameraPosition(target: LatLng(0,0),zoom: 15);
 
-  double latitude = 10.757574;
-  double longitude = 78.683008;
+  List<Marker> markers = [];
+  late BitmapDescriptor mapMaker;
+
+  late GoogleMapController _googleMapController;
+
+  static final CameraPosition _initialPosition = CameraPosition(
+      target: LatLng(48.858472430968696, 2.2945242136347552),
+      zoom: 15);
 
   TextEditingController _searchLocation =  new TextEditingController();
+
+  setCustomMarkers() async{
+    mapMaker = await BitmapDescriptor.fromAssetImage(ImageConfiguration(), 'assets/myLocation.png');
+  }
+
 
   getDetails(){
     setState(() {
@@ -58,7 +70,31 @@ class _HomeState extends State<Home> {
       }
     }
   }
+  getLiveLocation() async{
+    try{
+      await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((value) => {
+        setState((){
+        latlng = LatLng(value.latitude, value.longitude);
+        _currentPosition = CameraPosition(target: latlng, zoom: 17);
 
+      })
+      });
+      setMarkers();
+    }catch(e){
+      print(e.toString());
+    }
+  }
+
+  setMarkers(){
+    if(_currentPosition!=null){
+      markers.add(Marker(
+          markerId: MarkerId('My Location'),
+          position: latlng,
+          icon: mapMaker,
+
+      ));
+    }
+  }
 
 
   @override
@@ -66,10 +102,13 @@ class _HomeState extends State<Home> {
     // TODO: implement initState
     getLocationPermission();
     getDetails();
+    setCustomMarkers();
     super.initState();
 
 
   }
+  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,10 +131,11 @@ class _HomeState extends State<Home> {
         child: Stack(
           children: [
             GoogleMap(
-              initialCameraPosition: CameraPosition(target: LatLng(latitude, longitude), zoom: 16),
+              initialCameraPosition: _initialPosition,
               mapType: MapType.terrain,
               zoomControlsEnabled: false,
-
+              onMapCreated: (GoogleMapController controller) => _googleMapController = controller,
+              markers: Set.of(markers),
             ),
             Container(
               margin: EdgeInsets.only(top: 10, left: 10,right: 10),
@@ -143,14 +183,10 @@ class _HomeState extends State<Home> {
         child: Icon(Icons.my_location_outlined),
         onPressed: () async{
           getLocationPermission();
-          Position location = await getLiveLocation();
-          setState((){
-            _currentLocation =  location;
-            latitude = _currentLocation.latitude;
-            longitude = _currentLocation.longitude;
-          });
-          print(_currentLocation.toJson());
-
+          await getLiveLocation();
+          _googleMapController.animateCamera(CameraUpdate.newCameraPosition(_currentPosition));
+          
+          print(latlng);
         },
       ),
     );
