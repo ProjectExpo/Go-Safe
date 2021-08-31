@@ -91,6 +91,7 @@ class _HomeState extends State<Home> {
           markerId: MarkerId('My Location'),
           position: latlng,
           icon: mapMaker,
+          infoWindow: InfoWindow(title: 'My Location'),
 
       ));
     }
@@ -136,6 +137,9 @@ class _HomeState extends State<Home> {
               zoomControlsEnabled: false,
               onMapCreated: (GoogleMapController controller) => _googleMapController = controller,
               markers: Set.of(markers),
+              myLocationButtonEnabled: false,
+
+
             ),
             Container(
               margin: EdgeInsets.only(top: 10, left: 10,right: 10),
