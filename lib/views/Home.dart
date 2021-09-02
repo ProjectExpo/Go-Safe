@@ -1,13 +1,17 @@
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:project_expo/views/dialog.dart';
 import 'package:project_expo/views/sideMenu.dart';
+import 'package:project_expo/constants/.env.dart';
+import 'package:geocoding/geocoding.dart' as GeoCo;
 
 
 class Home extends StatefulWidget {
@@ -21,10 +25,15 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
 
   Map <String, dynamic>? details;
-  LatLng latlng = new LatLng(0, 0);
+  LatLng latlng = new LatLng(10.758463206941846, 78.68146469709662);
   CameraPosition _currentPosition = new CameraPosition(target: LatLng(0,0),zoom: 15);
+  String Myaddress = "";
+  LatLng _searchLatLng = new LatLng(0, 0);
+  String SearchAddress ="";
 
   List<Marker> markers = [];
+
+  Marker search = Marker(markerId: MarkerId('Search'));
   late BitmapDescriptor mapMaker;
 
   late GoogleMapController _googleMapController;
@@ -34,6 +43,8 @@ class _HomeState extends State<Home> {
       zoom: 15);
 
   TextEditingController _searchLocation =  new TextEditingController();
+
+
 
   setCustomMarkers() async{
     mapMaker = await BitmapDescriptor.fromAssetImage(ImageConfiguration(), 'assets/myLocation.png');
@@ -58,6 +69,8 @@ class _HomeState extends State<Home> {
     print(details);
 
   }
+
+
 
 
   getLocationPermission() async{
@@ -85,17 +98,101 @@ class _HomeState extends State<Home> {
     }
   }
 
-  setMarkers(){
+  setMarkers() async{
+    await getMyAddress();
     if(_currentPosition!=null){
       markers.add(Marker(
           markerId: MarkerId('My Location'),
           position: latlng,
           icon: mapMaker,
-          infoWindow: InfoWindow(title: 'My Location'),
+          infoWindow: InfoWindow(title: Myaddress),
 
       ));
     }
   }
+
+  getMyAddress() async{
+    List<GeoCo.Placemark> address = await GeoCo.GeocodingPlatform.instance.placemarkFromCoordinates(latlng.latitude, latlng.longitude);
+    var mainAddress = address[0];
+
+    Myaddress = mainAddress.locality.toString();
+
+    if(mainAddress!=null){
+      var MyAd;
+
+      MyAd = "${mainAddress.subLocality}";
+      MyAd = "$MyAd, ${mainAddress.locality}";
+      MyAd = "$MyAd, ${mainAddress.country}";
+      MyAd = "$MyAd, ${mainAddress.postalCode}";
+
+      setState(() {
+        Myaddress = MyAd;
+      });
+
+    }
+
+  }
+
+  getSearchAddress(LatLng searchLatLng) async{
+    List<GeoCo.Placemark> address = await GeoCo.GeocodingPlatform.instance.placemarkFromCoordinates(searchLatLng.latitude, searchLatLng.longitude);
+    var mainAddress = address[0];
+
+
+    if(mainAddress!=null){
+      var MyAd;
+      MyAd = "${mainAddress.name}";
+      MyAd = "$MyAd, ${mainAddress.street}";
+      MyAd = "$MyAd, ${mainAddress.subLocality}";
+      MyAd = "$MyAd, ${mainAddress.locality}";
+      MyAd = "$MyAd, ${mainAddress.country}";
+      MyAd = "$MyAd, ${mainAddress.postalCode}";
+
+      setState(() {
+        SearchAddress = MyAd;
+      });
+
+    }
+
+  }
+
+  getLatLng(String Place) async {
+    List<GeoCo.Location> location = await GeoCo.GeocodingPlatform.instance.locationFromAddress(Place);
+    // print(location);
+    var searchLatLng = location[0];
+
+    if(searchLatLng!=null){
+      LatLng tempLatLng ;
+
+      tempLatLng = new LatLng(searchLatLng.latitude, searchLatLng.longitude);
+
+      setState(() {
+        _searchLatLng = tempLatLng;
+      });
+    }
+  }
+
+  // Future <void> showSeacrhDialod() async{
+  //   var p = await showGooglePlacesAutocomplete(context: context,
+  //       apiKey: ApiKey,
+  //       mode: Mode.fullscreen,
+  //       language: "en",
+  //       offset: 0,
+  //       hint: "Search Places..",
+  //       radius: 1000,
+  //       types: [],
+  //       strictbounds: false,
+  //   );
+  //   getLocationFromPlaceId(p!.placeId!);
+  // }
+
+  // Future <void> getLocationFromPlaceId(String placeId) async{
+  //   GoogleMapsPlaces places = GoogleMapsPlaces(
+  //     apiKey: ApiKey,
+  //     apiHeaders:
+  //   )
+  // }
+
+
 
 
   @override
@@ -104,8 +201,8 @@ class _HomeState extends State<Home> {
     getLocationPermission();
     getDetails();
     setCustomMarkers();
-    super.initState();
 
+    super.initState();
 
   }
   
@@ -135,10 +232,12 @@ class _HomeState extends State<Home> {
               initialCameraPosition: _initialPosition,
               mapType: MapType.terrain,
               zoomControlsEnabled: false,
-              onMapCreated: (GoogleMapController controller) => _googleMapController = controller,
+
               markers: Set.of(markers),
               myLocationButtonEnabled: false,
-
+              onMapCreated: (GoogleMapController controller) =>{
+                _googleMapController = controller,
+              },
 
             ),
             Container(
@@ -147,12 +246,24 @@ class _HomeState extends State<Home> {
                   controller: _searchLocation,
                   decoration: InputDecoration(
                     suffixIcon: IconButton(
-                      onPressed: (){},
+                      onPressed: () async{
+                        await getLatLng(_searchLocation.text);
+                        await getSearchAddress(_searchLatLng);
+                        search = Marker(
+                          markerId: MarkerId('Search'),
+                          position: _searchLatLng,
+                          infoWindow: InfoWindow(title: SearchAddress),
+                        );
+                        markers.add(search);
+                        _googleMapController.animateCamera(
+                            CameraUpdate.newCameraPosition(new CameraPosition(target: _searchLatLng,zoom: 15)));
+                        print(SearchAddress);
+                      },
                       icon: Icon(Icons.search),
                     ),
                     hintText: 'Search',
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.5),
+                    fillColor: Colors.white,
                     contentPadding: EdgeInsets.only(left: 30),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(50),
@@ -189,8 +300,9 @@ class _HomeState extends State<Home> {
           getLocationPermission();
           await getLiveLocation();
           _googleMapController.animateCamera(CameraUpdate.newCameraPosition(_currentPosition));
-          
-          print(latlng);
+
+          // print(_searchLatLng);
+
         },
       ),
     );
