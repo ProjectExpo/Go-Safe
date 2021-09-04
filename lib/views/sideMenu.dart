@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:project_expo/Autentication/auth.dart';
+import 'package:project_expo/views/favorite_places.dart';
+import 'Home.dart';
+
 
 class NavDrawer extends StatefulWidget {
   final String? name;
   final String? email;
-  const NavDrawer({Key? key, required this.name, required this.email}) : super(key: key);
+  final String? uid;
+  const NavDrawer({Key? key, required this.name, required this.email, required this.uid}) : super(key: key);
 
   @override
   _NavDrawerState createState() => _NavDrawerState();
@@ -42,7 +47,9 @@ class _NavDrawerState extends State<NavDrawer> {
               ),
             ),
             ListTile(
-              onTap: (){},
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context) => FavPlace(uid: widget.uid,)));
+              },
               leading: Icon(Icons.favorite,color: Colors.white,size: 30,),
               title: Text(
                 'Favorite Places',

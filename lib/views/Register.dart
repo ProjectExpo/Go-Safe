@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:project_expo/Autentication/auth.dart';
 import 'package:project_expo/Autentication/firebaseStore.dart';
 import 'package:project_expo/constants/color.dart';
@@ -21,9 +22,12 @@ class _RegisterState extends State<Register> {
   TextEditingController _name = new TextEditingController();
   TextEditingController _password = new TextEditingController();
   TextEditingController _cpassword = new TextEditingController();
+  TextEditingController _number = new TextEditingController();
+
+  GeoPoint g = GeoPoint(0,0);
 
   void addUser(){
-    Map<String,dynamic> userData={'email': _email.text, 'name': _name.text};
+    Map<String,dynamic> userData={'email': _email.text, 'name': _name.text, 'Phone Number': _number.text,'Last Current Location': g};
     FirebaseFirestore
         .instance
         .collection("users")
@@ -31,6 +35,7 @@ class _RegisterState extends State<Register> {
         .set(userData);
     print('added');
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +82,16 @@ class _RegisterState extends State<Register> {
               Container(
                 margin: EdgeInsets.only(left: 20, right: 20, top: 25),
                 child: TextFormField(
+                  controller: _number,
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.phone),
+                    labelText: 'Contact Number',
+                  ),
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.only(left: 20, right: 20, top: 25),
+                child: TextFormField(
                   obscureText: true,
                   controller: _password,
                   decoration: InputDecoration(
@@ -85,6 +100,7 @@ class _RegisterState extends State<Register> {
                   ),
                 ),
               ),
+
               Container(
                 margin: EdgeInsets.only(left: 20, right: 20, top: 25),
                 child: TextFormField(

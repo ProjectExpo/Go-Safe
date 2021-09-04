@@ -1,11 +1,9 @@
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:project_expo/views/dialog.dart';
@@ -43,11 +41,21 @@ class _HomeState extends State<Home> {
       zoom: 15);
 
   TextEditingController _searchLocation =  new TextEditingController();
-
-
+  
 
   setCustomMarkers() async{
     mapMaker = await BitmapDescriptor.fromAssetImage(ImageConfiguration(), 'assets/myLocation.png');
+  }
+
+  updateLastCurrentLocation(LatLng l) async{
+    GeoPoint cuurentpoint = GeoPoint(l.latitude, l.longitude);
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.uid)
+        .update({'Last Current Location': cuurentpoint})
+        .then((value) => print("Location updated"))
+        .catchError((e) => print(e.toString()));
   }
 
 
@@ -171,29 +179,6 @@ class _HomeState extends State<Home> {
     }
   }
 
-  // Future <void> showSeacrhDialod() async{
-  //   var p = await showGooglePlacesAutocomplete(context: context,
-  //       apiKey: ApiKey,
-  //       mode: Mode.fullscreen,
-  //       language: "en",
-  //       offset: 0,
-  //       hint: "Search Places..",
-  //       radius: 1000,
-  //       types: [],
-  //       strictbounds: false,
-  //   );
-  //   getLocationFromPlaceId(p!.placeId!);
-  // }
-
-  // Future <void> getLocationFromPlaceId(String placeId) async{
-  //   GoogleMapsPlaces places = GoogleMapsPlaces(
-  //     apiKey: ApiKey,
-  //     apiHeaders:
-  //   )
-  // }
-
-
-
 
   @override
   void initState() {
@@ -210,9 +195,8 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: NavDrawer(name: details?['name'], email: details?['email'],),
+      drawer: NavDrawer(name: details?['name'], email: details?['email'], uid: widget.uid,),
       appBar: AppBar(
-
         // automaticallyImplyLeading: false,
         centerTitle: true,
         title: Text(
@@ -239,6 +223,7 @@ class _HomeState extends State<Home> {
                 _googleMapController = controller,
               },
 
+
             ),
             Container(
               margin: EdgeInsets.only(top: 10, left: 10,right: 10),
@@ -253,6 +238,7 @@ class _HomeState extends State<Home> {
                           markerId: MarkerId('Search'),
                           position: _searchLatLng,
                           infoWindow: InfoWindow(title: SearchAddress),
+
                         );
                         markers.add(search);
                         _googleMapController.animateCamera(
@@ -294,16 +280,27 @@ class _HomeState extends State<Home> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.my_location_outlined),
-        onPressed: () async{
-          getLocationPermission();
-          await getLiveLocation();
-          _googleMapController.animateCamera(CameraUpdate.newCameraPosition(_currentPosition));
-
-          // print(_searchLatLng);
-
-        },
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: 'direction',
+            onPressed: (){},
+            child: Icon(Icons.directions),
+          ),
+          SizedBox(height: 20,),
+          FloatingActionButton(
+            heroTag: 'location',
+            child: Icon(Icons.my_location_outlined),
+            onPressed: () async{
+              getLocationPermission();
+              await getLiveLocation();
+              _googleMapController.animateCamera(CameraUpdate.newCameraPosition(_currentPosition));
+              await updateLastCurrentLocation(latlng);
+              // print(_searchLatLng);
+            },
+          ),
+        ],
       ),
     );
   }
