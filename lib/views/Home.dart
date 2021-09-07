@@ -266,7 +266,7 @@ class _HomeState extends State<Home> {
               ),
               child: MaterialButton(
                 onPressed: (){
-                  showDialog(context: context, builder: (context) => Box(),);
+                  showDialog(context: context, builder: (context) => Box(uid: widget.uid,),);
                 },
                 child: Text(
                   'SOS',
