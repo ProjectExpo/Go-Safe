@@ -37,6 +37,9 @@ dependencies:
   http: ^0.13.3
   geocoding: ^2.0.0
   firebase_messaging: ^10.0.6
+  awesome_notifications: ^0.0.6+10
+  lite_rolling_switch: ^0.1.1
+  google_fonts: ^2.1.0
 
 dev_dependencies:
   flutter_test:

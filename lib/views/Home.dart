@@ -1,11 +1,13 @@
 
 import 'dart:async';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:project_expo/services/notification.dart';
 import 'package:project_expo/views/dialog.dart';
 import 'package:project_expo/views/sideMenu.dart';
 import 'package:project_expo/constants/.env.dart';
@@ -33,6 +35,7 @@ class _HomeState extends State<Home> {
 
   Marker search = Marker(markerId: MarkerId('Search'));
   late BitmapDescriptor mapMaker;
+  late BitmapDescriptor helpMaker;
 
   late GoogleMapController _googleMapController;
 
@@ -45,6 +48,7 @@ class _HomeState extends State<Home> {
 
   setCustomMarkers() async{
     mapMaker = await BitmapDescriptor.fromAssetImage(ImageConfiguration(), 'assets/myLocation.png');
+    helpMaker = await BitmapDescriptor.fromAssetImage(ImageConfiguration(), 'assets/help_on_map.png');
   }
 
   updateLastCurrentLocation(LatLng l) async{
@@ -103,8 +107,7 @@ class _HomeState extends State<Home> {
       setMarkers();
     }catch(e){
       print(e.toString());
-    }
-  }
+    }  }
 
   setMarkers() async{
     await getMyAddress();
@@ -180,15 +183,85 @@ class _HomeState extends State<Home> {
   }
 
 
+
+  PlaceHelpMarkers()async{
+    List<LatLng> usersNeededHelp =[];
+    List<dynamic> users =[];
+    await FirebaseFirestore.instance.collection('users').doc(widget.uid).get().then((snapshot) =>{
+      // users = snapshot.data()?['usersNeedHelps']
+     users =  snapshot.data()?['UsersNeedHelps']
+    });
+
+   users.forEach((userUid)async{
+      LatLng currentUsersLocation = new LatLng(0, 0);
+      await FirebaseFirestore.instance.collection('users').doc(userUid).get().then((snapshot) => {
+        currentUsersLocation = LatLng(snapshot.data()?['Last Current Location'].latitude,snapshot.data()?['Last Current Location'].longitude),
+        usersNeededHelp.add(currentUsersLocation),
+        // print(usersNeededHelp)
+      });
+    });
+
+    Future.delayed(Duration(seconds: 1),(){
+      if(usersNeededHelp.length == 0){
+        setState(() {
+          markers.remove(Marker(markerId: MarkerId(1.toString())));
+        });
+      }
+      for(int i=1;i<=usersNeededHelp.length;i++){
+        setState(() {
+          markers.add(
+            Marker(
+              markerId: MarkerId(i.toString()),
+              icon: helpMaker,
+              position: usersNeededHelp[i-1],
+              infoWindow: InfoWindow(title: 'Help is Called'),
+            ),
+          );
+        });
+
+      }
+    });
+   
+
+  }
+
+  Timer? timer;
+
   @override
   void initState() {
     // TODO: implement initState
+
     getLocationPermission();
     getDetails();
     setCustomMarkers();
 
-    super.initState();
 
+    super.initState();
+    AwesomeNotifications().isNotificationAllowed().then((isAllowed) => {
+      if(!isAllowed){
+        showDialog(context: context,
+            builder: (context) => AlertDialog(title: Text('Allow Notifications'),
+              content: Text('Our App  would like to send you notifications'),
+              actions: [
+                TextButton(onPressed: (){Navigator.pop(context);}, child: Text('Don\'t Allow', style: TextStyle(color: Colors.grey, fontSize: 18),)),
+                TextButton(onPressed: (){
+                  AwesomeNotifications().requestPermissionToSendNotifications().then((value) => Navigator.pop(context));
+                }, child: Text('Allow', style: TextStyle(color: Colors.blue, fontSize: 18, fontWeight: FontWeight.bold),))
+              ],
+
+            ))
+      }
+    });
+    timer = Timer.periodic(Duration(seconds: 5), (timer) {
+      PlaceHelpMarkers();
+    });
+
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
   
 
@@ -285,7 +358,9 @@ class _HomeState extends State<Home> {
         children: [
           FloatingActionButton(
             heroTag: 'direction',
-            onPressed: (){},
+            onPressed: (){
+              // PlaceHelpMarkers();
+            },
             child: Icon(Icons.directions),
           ),
           SizedBox(height: 20,),

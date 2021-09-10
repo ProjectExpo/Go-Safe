@@ -11,3 +11,10 @@ void addUser(String? uid, String email, String name){
   });
   print('added');
 }
+
+
+List<dynamic> users =[];
+
+deleteHelp(List<dynamic> usersSent, String User)async{
+  print(usersSent);
+}

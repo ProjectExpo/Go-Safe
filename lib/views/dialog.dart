@@ -1,9 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart';
 import 'package:project_expo/Autentication/location.dart';
+import 'package:project_expo/services/notification.dart';
+import 'package:project_expo/Autentication/firebaseStore.dart';
+import 'package:project_expo/views/HelpMode.dart';
 
 
 class Box extends StatefulWidget {
@@ -51,6 +55,30 @@ class _BoxState extends State<Box> {
 
       }
       // print(distanceBetweenUsers(_latLng, temp));
+    });
+  }
+
+  putHelpNearBy() async{
+    String UserUid = widget.uid!;
+    bool isTiggeredHelp = true;
+
+    await FirebaseFirestore.instance.collection('users').doc(widget.uid).update({'CalledHelp' : isTiggeredHelp});
+
+    List<dynamic> listOfUsers = [];
+
+    usersNear.forEach((element) async{
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(element)
+          .get()
+          .then((DocumentSnapshot documentSnapshot) => {
+        listOfUsers = documentSnapshot.get('UsersNeedHelps')
+      }).catchError((e) => print(e.toString()));
+
+      if(!listOfUsers.contains(UserUid)){
+        listOfUsers.add(UserUid);
+      }
+      await FirebaseFirestore.instance.collection('users').doc(element).update({'UsersNeedHelps': listOfUsers});
     });
 
 
@@ -109,15 +137,15 @@ class _BoxState extends State<Box> {
             child: MaterialButton(
               padding: EdgeInsets.symmetric(horizontal: 25, vertical: 16),
               onPressed: () async{
+                // await createNotification();
                 await getUsersNear();
-                print(usersNear);
+                await putHelpNearBy();
                 Navigator.pop(context);
               },
               child: Text('Call For Help'),
               elevation: 1.0,
             ),
           ),
-
         ],
       ),
     );

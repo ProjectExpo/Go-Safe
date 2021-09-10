@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:project_expo/Autentication/auth.dart';
+import 'package:project_expo/views/HelpMode.dart';
 import 'package:project_expo/views/favorite_places.dart';
 import 'Home.dart';
 
@@ -16,6 +18,20 @@ class NavDrawer extends StatefulWidget {
 }
 
 class _NavDrawerState extends State<NavDrawer> {
+
+  Map<String, dynamic>? details;
+
+  getHelpCalled() async{
+    await FirebaseFirestore.instance.collection('users').doc(widget.uid).get().then((DocumentSnapshot<Map<String,dynamic>> snapshot) =>{
+      if(snapshot.exists){
+        setState((){
+          details = snapshot.data();
+        })
+
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -55,12 +71,27 @@ class _NavDrawerState extends State<NavDrawer> {
                 'Favorite Places',
                 style: TextStyle(
                   color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            ListTile(
+              onTap: ()async{
+                await getHelpCalled();
+                Navigator.push(context, MaterialPageRoute(builder: (context) => HelpMode(uid: widget.uid!, details: details,)));
+              },
+              leading: Icon(Icons.volunteer_activism, color: Colors.white,size: 30,),
+              title: Text(
+                'Help Mode',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
                 ),
               ),
             ),
 
             Container(
-              margin: EdgeInsets.only(top: 300),
+              margin: EdgeInsets.only(top: 250),
               child: Column(
                 children: [
                   Divider(height: 10,color: Colors.white,indent: 10, endIndent: 10,thickness: 1.2,),

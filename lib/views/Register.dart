@@ -27,7 +27,9 @@ class _RegisterState extends State<Register> {
   GeoPoint g = GeoPoint(0,0);
 
   void addUser(){
-    Map<String,dynamic> userData={'email': _email.text, 'name': _name.text, 'Phone Number': _number.text,'Last Current Location': g};
+    List<dynamic> listOfUsers = [];
+    bool isHelpNeeded = false;
+    Map<String,dynamic> userData={'email': _email.text, 'name': _name.text, 'Phone Number': _number.text,'Last Current Location': g,'isHelpNeeded': isHelpNeeded,'UsersNeedHelps': listOfUsers, 'CalledHelp': isHelpNeeded};
     FirebaseFirestore
         .instance
         .collection("users")
