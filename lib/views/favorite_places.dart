@@ -127,7 +127,7 @@ class _FavPlaceState extends State<FavPlace> {
             },
           ),
           Container(
-            margin: EdgeInsets.only(top: 324,left: 10, right: 10),
+            margin: EdgeInsets.only(top: MediaQuery.of(context).size.height-520,left: 10, right: 10),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(topLeft:Radius.circular(20), topRight: Radius.circular(20)),

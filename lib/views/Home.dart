@@ -24,6 +24,8 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 
+  bool SendNotification = true;
+
   Map <String, dynamic>? details;
   LatLng latlng = new LatLng(10.758463206941846, 78.68146469709662);
   CameraPosition _currentPosition = new CameraPosition(target: LatLng(0,0),zoom: 15);
@@ -204,10 +206,14 @@ class _HomeState extends State<Home> {
     Future.delayed(Duration(seconds: 1),(){
       if(usersNeededHelp.length == 0){
         setState(() {
-          markers.remove(Marker(markerId: MarkerId(1.toString())));
+          SendNotification = true;
         });
       }
       for(int i=1;i<=usersNeededHelp.length;i++){
+        if(SendNotification){
+          createNotification();
+          SendNotification = false;
+        }
         setState(() {
           markers.add(
             Marker(
@@ -331,7 +337,7 @@ class _HomeState extends State<Home> {
                 ),
             ),
             Container(
-              margin: EdgeInsets.only(top: 650, left: 10),
+              margin: EdgeInsets.only(top: MediaQuery.of(context).size.height-170, left: 10),
               decoration: BoxDecoration(
                 color: Colors.green,
                 borderRadius: BorderRadius.circular(20),
@@ -360,6 +366,7 @@ class _HomeState extends State<Home> {
             heroTag: 'direction',
             onPressed: (){
               // PlaceHelpMarkers();
+              createNotification();
             },
             child: Icon(Icons.directions),
           ),

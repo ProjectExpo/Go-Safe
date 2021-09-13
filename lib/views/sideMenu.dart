@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:project_expo/Autentication/auth.dart';
 import 'package:project_expo/views/HelpMode.dart';
+import 'package:project_expo/views/Login.dart';
 import 'package:project_expo/views/favorite_places.dart';
 import 'Home.dart';
 
@@ -98,9 +99,7 @@ class _NavDrawerState extends State<NavDrawer> {
                   ListTile(
                     onTap: (){
                       SignOut();
-                      Navigator.pop(context);
-                      Navigator.pop(context);
-
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LogIn(),));
                     },
                     leading: Icon(Icons.exit_to_app, color: Colors.white,size: 30,),
                     title: Text(

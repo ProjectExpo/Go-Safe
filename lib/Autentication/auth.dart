@@ -16,7 +16,7 @@ Future <dynamic> SignUpWith(String email, String password) async{
   }
 }
 
-Future <bool> SignInWith(String email, String password) async{
+Future <dynamic> SignInWith(String email, String password) async{
   try{
     await FirebaseAuth
         .instance
@@ -24,8 +24,7 @@ Future <bool> SignInWith(String email, String password) async{
     return true;
 
   }catch(e){
-    print(e.toString());
-    return false;
+    return e.toString();
   }
 }
 

@@ -8,7 +8,6 @@ import 'services/notification.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  FirebaseMessaging.onBackgroundMessage(firebaseHandler);
   AwesomeNotifications().initialize(
       null,
       [NotificationChannel(channelKey: 'basic_channel',
