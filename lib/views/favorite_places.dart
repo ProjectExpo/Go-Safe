@@ -109,7 +109,7 @@ class _FavPlaceState extends State<FavPlace> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          'Add Favorite Places',
+          'Add Routine Places',
         ),
         elevation: 10.0,
       ),
@@ -190,9 +190,10 @@ class _FavPlaceState extends State<FavPlace> {
                     },
                     child: Row(
                       children: [
+                        SizedBox(width: 20,),
                         Icon(Icons.add),
                         Text(
-                          'Add to Favorite',
+                          'Add to List',
                           style: TextStyle(
                             fontSize: 16,
                           ),

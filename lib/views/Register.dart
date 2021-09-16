@@ -27,7 +27,7 @@ class _RegisterState extends State<Register> {
   void addUser(){
     List<dynamic> listOfUsers = [];
     bool isHelpNeeded = false;
-    Map<String,dynamic> userData={'email': _email.text, 'name': _name.text, 'Phone Number': _number.text,'Last Current Location': g,'isHelpNeeded': isHelpNeeded,'UsersNeedHelps': listOfUsers, 'CalledHelp': isHelpNeeded};
+    Map<String,dynamic> userData={'email': _email.text, 'name': _name.text, 'Phone Number': _number.text,'Last Current Location': g,'isHelpNeeded': isHelpNeeded,'UsersNeedHelps': listOfUsers, 'CalledHelp': isHelpNeeded, 'Emergency Contacts': listOfUsers,'Favorite Places': listOfUsers};
     FirebaseFirestore
         .instance
         .collection("users")

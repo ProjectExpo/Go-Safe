@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:project_expo/Autentication/auth.dart';
+import 'package:project_expo/views/EmergencyContacts.dart';
 import 'package:project_expo/views/HelpMode.dart';
 import 'package:project_expo/views/Login.dart';
 import 'package:project_expo/views/favorite_places.dart';
@@ -69,7 +70,20 @@ class _NavDrawerState extends State<NavDrawer> {
               },
               leading: Icon(Icons.favorite,color: Colors.white,size: 30,),
               title: Text(
-                'Favorite Places',
+                'Routine Places',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            ListTile(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context) => EmergencyContact(uid: widget.uid,),));
+              },
+              leading: Icon(Icons.perm_contact_cal, color: Colors.white,size: 30,),
+              title: Text(
+                'Emergency Contacts',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -92,7 +106,7 @@ class _NavDrawerState extends State<NavDrawer> {
             ),
 
             Container(
-              margin: EdgeInsets.only(top: 250),
+              margin: EdgeInsets.only(top: 170),
               child: Column(
                 children: [
                   Divider(height: 10,color: Colors.white,indent: 10, endIndent: 10,thickness: 1.2,),

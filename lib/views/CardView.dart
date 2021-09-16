@@ -46,7 +46,7 @@ class _LocationNameState extends State<LocationName> {
 
 
     return ListTile(
-      leading: Icon(Icons.place),
+      leading: Icon(Icons.place,),
       title: Text(
         Address,
       ),

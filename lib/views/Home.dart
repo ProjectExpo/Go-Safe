@@ -8,9 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:project_expo/services/notification.dart';
+import 'package:project_expo/views/HelpDetails.dart';
 import 'package:project_expo/views/dialog.dart';
 import 'package:project_expo/views/sideMenu.dart';
-import 'package:project_expo/constants/.env.dart';
 import 'package:geocoding/geocoding.dart' as GeoCo;
 
 
@@ -25,6 +25,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
 
   bool SendNotification = true;
+  bool canAccessLocation = false;
+  LatLng? checkLatlng;
 
   Map <String, dynamic>? details;
   LatLng latlng = new LatLng(10.758463206941846, 78.68146469709662);
@@ -60,7 +62,11 @@ class _HomeState extends State<Home> {
         .collection('users')
         .doc(widget.uid)
         .update({'Last Current Location': cuurentpoint})
-        .then((value) => print("Location updated"))
+        .then((value) =>{
+          setState((){
+         checkLatlng = l;
+    })
+    })
         .catchError((e) => print(e.toString()));
   }
 
@@ -103,6 +109,11 @@ class _HomeState extends State<Home> {
         setState((){
         latlng = LatLng(value.latitude, value.longitude);
         _currentPosition = CameraPosition(target: latlng, zoom: 17);
+        if(checkLatlng == latlng){
+          canAccessLocation = false;
+        }else{
+          canAccessLocation = true;
+        }
 
       })
       });
@@ -118,7 +129,7 @@ class _HomeState extends State<Home> {
           markerId: MarkerId('My Location'),
           position: latlng,
           icon: mapMaker,
-          infoWindow: InfoWindow(title: Myaddress),
+          infoWindow: InfoWindow(title: Myaddress,),
 
       ));
     }
@@ -194,12 +205,21 @@ class _HomeState extends State<Home> {
      users =  snapshot.data()?['UsersNeedHelps']
     });
 
+    if(users.isEmpty){
+      print('hi');
+        setState(() {
+          markers =[];
+          setMarkers();
+        });
+      return;
+    }
+
    users.forEach((userUid)async{
-      LatLng currentUsersLocation = new LatLng(0, 0);
+      LatLng currentUsersLocation;
       await FirebaseFirestore.instance.collection('users').doc(userUid).get().then((snapshot) => {
+
         currentUsersLocation = LatLng(snapshot.data()?['Last Current Location'].latitude,snapshot.data()?['Last Current Location'].longitude),
         usersNeededHelp.add(currentUsersLocation),
-        // print(usersNeededHelp)
       });
     });
 
@@ -207,31 +227,45 @@ class _HomeState extends State<Home> {
       if(usersNeededHelp.length == 0){
         setState(() {
           SendNotification = true;
+
         });
+        return;
       }
       for(int i=1;i<=usersNeededHelp.length;i++){
         if(SendNotification){
           createNotification();
           SendNotification = false;
         }
-        setState(() {
           markers.add(
             Marker(
               markerId: MarkerId(i.toString()),
               icon: helpMaker,
               position: usersNeededHelp[i-1],
-              infoWindow: InfoWindow(title: 'Help is Called'),
+              infoWindow: InfoWindow(title: 'I Need Help'),
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context) => HelpDetails(uid: users[i-1],),));
+              }
             ),
           );
-        });
-
       }
+      setState(() {
+
+      });
     });
-   
 
   }
 
-  Timer? timer;
+  Timer? helperTimer;
+  Timer? userTimer;
+
+  LocationTracker() async{
+    await getLiveLocation();
+    _googleMapController.animateCamera(CameraUpdate.newCameraPosition(_currentPosition));
+    setState(() {
+
+    });
+    await updateLastCurrentLocation(latlng);
+  }
 
   @override
   void initState() {
@@ -254,20 +288,31 @@ class _HomeState extends State<Home> {
                   AwesomeNotifications().requestPermissionToSendNotifications().then((value) => Navigator.pop(context));
                 }, child: Text('Allow', style: TextStyle(color: Colors.blue, fontSize: 18, fontWeight: FontWeight.bold),))
               ],
-
             ))
       }
     });
-    timer = Timer.periodic(Duration(seconds: 5), (timer) {
+    helperTimer = Timer.periodic(Duration(seconds: 10), (timer) {
       PlaceHelpMarkers();
     });
+    // userTimer = Timer.periodic(Duration(seconds: 10), (timer) async{
+    //   await getLiveLocation();
+    //   // _googleMapController.animateCamera(CameraUpdate.newCameraPosition(_currentPosition));
+    //   if(canAccessLocation){
+    //     print('updated');
+    //     setState(() {
+    //
+    //     });
+    //     await updateLastCurrentLocation(latlng);
+    //   }
+    // });
 
   }
 
   @override
   void dispose() {
-    timer?.cancel();
     super.dispose();
+    helperTimer?.cancel();
+    userTimer?.cancel();
   }
   
 
@@ -301,8 +346,6 @@ class _HomeState extends State<Home> {
               onMapCreated: (GoogleMapController controller) =>{
                 _googleMapController = controller,
               },
-
-
             ),
             Container(
               margin: EdgeInsets.only(top: 10, left: 10,right: 10),
@@ -340,15 +383,15 @@ class _HomeState extends State<Home> {
               margin: EdgeInsets.only(top: MediaQuery.of(context).size.height-170, left: 10),
               decoration: BoxDecoration(
                 color: Colors.green,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(50),
                 shape: BoxShape.rectangle
               ),
               child: MaterialButton(
                 onPressed: (){
-                  showDialog(context: context, builder: (context) => Box(uid: widget.uid,),);
+                  showDialog(context: context, builder: (context) => Box(uid: widget.uid,details: details,),);
                 },
                 child: Text(
-                  'SOS',
+                  'Help',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20
@@ -366,7 +409,10 @@ class _HomeState extends State<Home> {
             heroTag: 'direction',
             onPressed: (){
               // PlaceHelpMarkers();
-              createNotification();
+              setState(() {
+                markers = [];
+                setMarkers();
+              });
             },
             child: Icon(Icons.directions),
           ),
@@ -375,10 +421,17 @@ class _HomeState extends State<Home> {
             heroTag: 'location',
             child: Icon(Icons.my_location_outlined),
             onPressed: () async{
+              setState(() {
+                if(!canAccessLocation){
+                  canAccessLocation = true;
+                }
+              });
+
               getLocationPermission();
-              await getLiveLocation();
-              _googleMapController.animateCamera(CameraUpdate.newCameraPosition(_currentPosition));
-              await updateLastCurrentLocation(latlng);
+              await LocationTracker();
+              setState(() {
+                checkLatlng = latlng;
+              });
               // print(_searchLatLng);
             },
           ),

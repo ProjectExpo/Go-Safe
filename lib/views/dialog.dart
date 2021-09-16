@@ -11,19 +11,16 @@ import 'package:project_expo/views/HelpMode.dart';
 
 
 class Box extends StatefulWidget {
+  final Map<String, dynamic>? details;
   final String? uid;
-  const Box({Key? key, required this.uid}) : super(key: key);
+  const Box({Key? key, required this.uid, required this.details}) : super(key: key);
   @override
   _BoxState createState() => _BoxState();
 }
 
 class _BoxState extends State<Box> {
 
-  @override
-  void initState() {
-    getLiveLocation();
-    super.initState();
-  }
+
 
   LatLng _latLng = new LatLng(0, 0);
 
@@ -46,9 +43,14 @@ class _BoxState extends State<Box> {
   getUsersNear() async{
     final QuerySnapshot result = await FirebaseFirestore.instance.collection('users').get();
     final List<QueryDocumentSnapshot<Object?>> document = result.docs;
+    LatLng urLocation = LatLng(widget.details?['Last Current Location'].latitude, widget.details?['Last Current Location'].longitude);
     document.forEach((element) {
       LatLng temp = LatLng(element['Last Current Location'].latitude, element['Last Current Location'].longitude);
-      if(distanceBetweenUsers(_latLng, temp) < 2000 && element.id != widget.uid){
+      print(element['Last Current Location'].latitude);
+      print(element['Last Current Location'].longitude);
+      print(urLocation);
+      print(distanceBetweenUsers(urLocation, temp));
+      if(distanceBetweenUsers(urLocation, temp) < 2000 && element.id != widget.uid){
         setState(() {
           usersNear.add(element.id);
         });
@@ -56,6 +58,7 @@ class _BoxState extends State<Box> {
       }
       // print(distanceBetweenUsers(_latLng, temp));
     });
+    // print(usersNear);
   }
 
   putHelpNearBy() async{
@@ -84,6 +87,16 @@ class _BoxState extends State<Box> {
 
   }
 
+  SendHelp(){
+    getUsersNear();
+    putHelpNearBy();
+  }
+
+  @override
+  void initState() {
+    getLiveLocation();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,61 +106,59 @@ class _BoxState extends State<Box> {
       ),
       elevation: 0,
       backgroundColor: Colors.transparent,
-      child: dialogContent(context),
-    );
-  }
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 220),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          color: Colors.white,
+          shape: BoxShape.rectangle,
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.only(left: 30, top: 20),
+              child: Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded,color: Colors.red,),
+                  Text('Emergengy',style: TextStyle(
+                    color: Colors.red,
+                  ),),
+                ],
+              ),
+            ),
+            Container(
+                margin: EdgeInsets.all(40),
+                child: Text(
+                  'Are You Sure to Call for Help, Your Location will be sent to people nearby',
+                  style: TextStyle(
+                      fontSize: 20
+                  ),
+                )
+            ),
 
-  dialogContent(BuildContext){
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 220),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
-        color: Colors.white,
-        shape: BoxShape.rectangle,
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.only(left: 30, top: 20),
-            child: Row(
-              children: [
-                Icon(Icons.warning_amber_rounded,color: Colors.red,),
-                Text('Emergengy',style: TextStyle(
-                  color: Colors.red,
-                ),),
-              ],
+            Container(
+              decoration: BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.circular(60),
+                  color: Colors.lightBlue
+              ),
+              child: MaterialButton(
+                padding: EdgeInsets.symmetric(horizontal: 25, vertical: 16),
+                onPressed: () async{
+                  // await createNotification();
+                  SendHelp();
+                  bool temp = true;
+                  await FirebaseFirestore.instance.collection('users').doc(widget.uid).update({'CalledHelp' : temp}).then((value) => print('Set to true')).catchError((e)=> print(e.toString()));
+                  Navigator.pop(context);
+                },
+                child: Text('Call For Help'),
+                elevation: 1.0,
+              ),
             ),
-          ),
-          Container(
-              margin: EdgeInsets.all(40),
-              child: Text(
-                'Are You Sure to Call for Help, Your Location will be sent to people nearby',
-                style: TextStyle(
-                    fontSize: 20
-                ),
-              )
-          ),
-
-          Container(
-            decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.circular(60),
-                color: Colors.lightBlue
-            ),
-            child: MaterialButton(
-              padding: EdgeInsets.symmetric(horizontal: 25, vertical: 16),
-              onPressed: () async{
-                // await createNotification();
-                await getUsersNear();
-                await putHelpNearBy();
-                Navigator.pop(context);
-              },
-              child: Text('Call For Help'),
-              elevation: 1.0,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+
 }
