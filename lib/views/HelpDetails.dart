@@ -2,11 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:project_expo/views/CardView.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:project_expo/views/MessageView.dart';
+import 'package:telephony/telephony.dart';
 
 class HelpDetails extends StatefulWidget {
   final String uid;
-  const HelpDetails({Key? key, required this.uid}) : super(key: key);
+  final String urUid;
+  final String urName;
+  const HelpDetails({Key? key, required this.uid, required this.urUid, required this.urName}) : super(key: key);
 
   @override
   _HelpDetailsState createState() => _HelpDetailsState();
@@ -18,6 +21,22 @@ class _HelpDetailsState extends State<HelpDetails> {
   static final CameraPosition _initialPosition = CameraPosition(target: LatLng(48.858472430968696, 2.2945242136347552),zoom: 14);
 
   Map<String, dynamic>? details;
+
+  _makePhoneCall(String num) async{
+    final Telephony telephony = Telephony.instance;
+    bool? isPermissionEnabled = await telephony.requestPhoneAndSmsPermissions;
+    if(isPermissionEnabled!){
+      try{
+        telephony.dialPhoneNumber(num);
+      }catch(e){
+        print(e.toString());
+      }
+      print('Permission Enabled');
+    }else{
+      print('Permission not Enabled');
+    }
+  }
+
 
   GetDetails() async{
     setState(() {
@@ -37,15 +56,6 @@ class _HelpDetailsState extends State<HelpDetails> {
     print(details);
 
   }
-
-  _makePhoneCall(String num) async{
-    await launch('tel://$num');
-  }
-
-  _makeMessage(String num) async{
-    await launch('sms:$num');
-  }
-
   @override
   void initState() {
     GetDetails();
@@ -130,8 +140,8 @@ class _HelpDetailsState extends State<HelpDetails> {
                       padding: EdgeInsets.symmetric(vertical: 10, horizontal: 45),
                       child: Row(
                         children: [
-                          Text('Call',style: TextStyle(fontSize: 17),),
-                          Icon(Icons.call)
+                          Text('Call',style: TextStyle(fontSize: 17,color: Colors.white),),
+                          Icon(Icons.call,color: Colors.white,)
                         ],
                       ),
                     ),
@@ -143,18 +153,17 @@ class _HelpDetailsState extends State<HelpDetails> {
                     ),
                     child: MaterialButton(
                       onPressed: (){
-                        _makeMessage(details?['Phone Number']);
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => MessageField(details: details!, uid:  widget.uid,urUid: widget.urUid,urName: widget.urName,),));
                       },
                       padding: EdgeInsets.symmetric(vertical: 10, horizontal: 35),
                       child: Row(
                         children: [
-                          Text('Message',style: TextStyle(fontSize: 17),),
-                          Icon(Icons.message_rounded)
+                          Text('Message',style: TextStyle(fontSize: 17,color: Colors.white),),
+                          Icon(Icons.message_rounded, color: Colors.white,)
                         ],
                       ),
                     ),
                   ),
-
                 ],
               ),
             ),

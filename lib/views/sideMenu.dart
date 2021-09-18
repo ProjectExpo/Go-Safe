@@ -6,6 +6,7 @@ import 'package:project_expo/views/EmergencyContacts.dart';
 import 'package:project_expo/views/HelpMode.dart';
 import 'package:project_expo/views/Login.dart';
 import 'package:project_expo/views/favorite_places.dart';
+import 'package:project_expo/views/inbox.dart';
 import 'Home.dart';
 
 
@@ -29,7 +30,6 @@ class _NavDrawerState extends State<NavDrawer> {
         setState((){
           details = snapshot.data();
         })
-
       }
     });
   }
@@ -104,9 +104,23 @@ class _NavDrawerState extends State<NavDrawer> {
                 ),
               ),
             ),
+            ListTile(
+              onTap: ()async{
+                await getHelpCalled();
+                Navigator.push(context, MaterialPageRoute(builder: (context) => Inbox(uid: widget.uid!, name: details?['name'])));
+              },
+              leading: Icon(Icons.message, color: Colors.white,size: 30,),
+              title: Text(
+                'Inbox',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+            ),
 
             Container(
-              margin: EdgeInsets.only(top: 170),
+              margin: EdgeInsets.only(top: 130),
               child: Column(
                 children: [
                   Divider(height: 10,color: Colors.white,indent: 10, endIndent: 10,thickness: 1.2,),

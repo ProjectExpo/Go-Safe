@@ -12,6 +12,7 @@ import 'package:project_expo/views/HelpDetails.dart';
 import 'package:project_expo/views/dialog.dart';
 import 'package:project_expo/views/sideMenu.dart';
 import 'package:geocoding/geocoding.dart' as GeoCo;
+import 'package:telephony/telephony.dart';
 
 
 class Home extends StatefulWidget {
@@ -102,6 +103,7 @@ class _HomeState extends State<Home> {
         return Future.error('permission denied');
       }
     }
+    await Telephony.instance.requestPhoneAndSmsPermissions;
   }
   getLiveLocation() async{
     try{
@@ -243,7 +245,7 @@ class _HomeState extends State<Home> {
               position: usersNeededHelp[i-1],
               infoWindow: InfoWindow(title: 'I Need Help'),
               onTap: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context) => HelpDetails(uid: users[i-1],),));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => HelpDetails(uid: users[i-1],urUid: widget.uid!,urName: details?['name'],),));
               }
             ),
           );
