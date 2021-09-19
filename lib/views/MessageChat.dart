@@ -63,7 +63,7 @@ class MessageText extends StatelessWidget {
       mainAxisAlignment: isMe?MainAxisAlignment.end:MainAxisAlignment.start,
       children: [
         if(!isMe)
-          CircleAvatar(radius: 20, backgroundImage: NetworkImage('https://image.shutterstock.com/image-vector/male-avatar-profile-picture-vector-260nw-743546287.jpg'),),
+          CircleAvatar(radius: 20, backgroundImage: NetworkImage('https://img.favpng.com/19/16/1/computer-icons-png-favpng-t9NV5RQ9SB5GzU4r1kPEMaM3W.jpg'),),
         if(!isMe)
           SizedBox(width: 8,),
         Container(

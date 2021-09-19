@@ -82,9 +82,9 @@ class _HelpModeState extends State<HelpMode> {
       if(users.contains(widget.uid)){
         users.remove(widget.uid);
         await FirebaseFirestore.instance.collection('users').doc(element.id).update({'UsersNeedHelps':users});
+
       }
     });
-
   }
 
   @override
@@ -152,6 +152,11 @@ class _HelpModeState extends State<HelpMode> {
                     deleteHelp();
                     bool temp = false;
                     await FirebaseFirestore.instance.collection('users').doc(widget.uid).update({'CalledHelp' : temp}).then((value) => print('Set to false')).catchError((e)=> print(e.toString()));
+                    await FirebaseFirestore.instance.collection('chats/${widget.uid}/messages').get().then((snapshot) {
+                      for(DocumentSnapshot d in snapshot.docs){
+                        d.reference.delete();
+                      }
+                    }).then((value) => print('Delted'));
                   }else{
                     SendHelp();
                     bool temp = true;

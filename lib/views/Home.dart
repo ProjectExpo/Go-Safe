@@ -296,17 +296,17 @@ class _HomeState extends State<Home> {
     helperTimer = Timer.periodic(Duration(seconds: 10), (timer) {
       PlaceHelpMarkers();
     });
-    // userTimer = Timer.periodic(Duration(seconds: 10), (timer) async{
-    //   await getLiveLocation();
-    //   // _googleMapController.animateCamera(CameraUpdate.newCameraPosition(_currentPosition));
-    //   if(canAccessLocation){
-    //     print('updated');
-    //     setState(() {
-    //
-    //     });
-    //     await updateLastCurrentLocation(latlng);
-    //   }
-    // });
+    userTimer = Timer.periodic(Duration(seconds: 10), (timer) async{
+      await getLiveLocation();
+      // _googleMapController.animateCamera(CameraUpdate.newCameraPosition(_currentPosition));
+      if(canAccessLocation){
+        print('updated');
+        setState(() {
+
+        });
+        await updateLastCurrentLocation(latlng);
+      }
+    });
 
   }
 
@@ -381,26 +381,6 @@ class _HomeState extends State<Home> {
                   ),
                 ),
             ),
-            Container(
-              margin: EdgeInsets.only(top: MediaQuery.of(context).size.height-170, left: 10),
-              decoration: BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.circular(50),
-                shape: BoxShape.rectangle
-              ),
-              child: MaterialButton(
-                onPressed: (){
-                  showDialog(context: context, builder: (context) => Box(uid: widget.uid,details: details,),);
-                },
-                child: Text(
-                  'Help',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -408,15 +388,17 @@ class _HomeState extends State<Home> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
-            heroTag: 'direction',
+            heroTag: 'help',
+            backgroundColor: Colors.redAccent,
             onPressed: (){
-              // PlaceHelpMarkers();
-              setState(() {
-                markers = [];
-                setMarkers();
-              });
+              showDialog(context: context, builder: (context) => Box(uid: widget.uid,details: details,),);
             },
-            child: Icon(Icons.directions),
+            child: Text(
+              'SOS',
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
           ),
           SizedBox(height: 20,),
           FloatingActionButton(
